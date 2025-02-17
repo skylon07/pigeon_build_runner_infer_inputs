@@ -1,4 +1,4 @@
-import 'package:pigeon/pigeon_lib.dart';
+import 'package:pigeon/pigeon.dart';
 import 'package:pigeon_build_config/pigeon_build_config.dart';
 
 class BuildHandlerResult {
