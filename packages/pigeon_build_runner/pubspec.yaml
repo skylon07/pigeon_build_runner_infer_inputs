@@ -4,7 +4,7 @@ homepage: https://github.com/rotorgames/pigeon_build_runner
 repository: https://github.com/rotorgames/pigeon_build_runner
 issue_tracker: https://github.com/rotorgames/pigeon_build_runner/issues
 documentation: https://github.com/rotorgames/pigeon_build_runner/blob/main/README.md
-version: 1.1.1
+version: 2.0.0
 publish_to: none
 
 environment:
@@ -22,7 +22,7 @@ dependencies:
       ref: dependable
       path: packages/pigeon_build_core
   build: ^2.4.0
-  pigeon: ">=4.2.8 <24.0.0"
+  pigeon: ">=24.0.0"
   scratch_space: ^1.0.0
   path: ^1.8.3
   glob: ^2.1.3

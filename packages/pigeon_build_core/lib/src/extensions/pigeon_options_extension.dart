@@ -1,4 +1,4 @@
-import 'package:pigeon/pigeon_lib.dart';
+import 'package:pigeon/pigeon.dart';
 
 extension PigeonOptionsExtension on PigeonOptions {
   List<String> getAllOutputs() {

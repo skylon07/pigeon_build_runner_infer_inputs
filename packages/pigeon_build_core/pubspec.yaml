@@ -1,6 +1,6 @@
 name: pigeon_build_core
 description: A core package for pigeon_build_runner
-version: 1.1.1
+version: 2.0.0
 homepage: https://github.com/rotorgames/pigeon_build_runner
 repository: https://github.com/rotorgames/pigeon_build_runner
 issue_tracker: https://github.com/rotorgames/pigeon_build_runner/issues
@@ -14,7 +14,7 @@ dependencies:
   path: ^1.8.2
   meta: ^1.9.1
   recase: ^4.1.0
-  pigeon: ">=4.2.8 <24.0.0"
+  pigeon: ">=24.0.0"
   pigeon_build_config:
     git:
       url: https://github.com/skylon07/pigeon_build_runner_infer_inputs.git
