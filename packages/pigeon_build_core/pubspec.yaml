@@ -5,6 +5,7 @@ homepage: https://github.com/rotorgames/pigeon_build_runner
 repository: https://github.com/rotorgames/pigeon_build_runner
 issue_tracker: https://github.com/rotorgames/pigeon_build_runner/issues
 documentation: https://github.com/rotorgames/pigeon_build_runner/blob/main/README.md
+publish_to: none
 
 environment:
   sdk: '>=2.18.4 <4.0.0'
@@ -13,8 +14,12 @@ dependencies:
   path: ^1.8.2
   meta: ^1.9.1
   recase: ^4.1.0
-  pigeon: ">=4.2.8"
-  pigeon_build_config: ^1.1.0
+  pigeon: ">=4.2.8 <24.0.0"
+  pigeon_build_config:
+    git:
+      url: https://github.com/skylon07/pigeon_build_runner_infer_inputs.git
+      ref: dependable
+      path: packages/pigeon_build_config
 
 dev_dependencies:
   lints: ^2.0.0
