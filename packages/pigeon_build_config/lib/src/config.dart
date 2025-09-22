@@ -55,10 +55,13 @@ class PigeonBuildConfig {
   final PigeonBuildInputConfig? mainInput;
   @JsonKey(name: 'inputs')
   final List<PigeonBuildInputConfig> inputs;
+  @JsonKey(name: 'inputs-inferred')
+  final bool inputsInferred;
 
   PigeonBuildConfig({
     this.mainInput,
     this.inputs = const <PigeonBuildInputConfig>[],
+    this.inputsInferred = false,
   });
 
   factory PigeonBuildConfig.fromJson(Map json) =>

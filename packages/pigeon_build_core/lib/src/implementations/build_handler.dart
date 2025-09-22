@@ -39,6 +39,7 @@ class PigeonBuildHandler {
     String? astOut;
     bool? debugGenerators;
 
+    PigeonBuildInputConfig? matchingInput;
     for (var input in config.inputs) {
       if (input.input == null) {
         continue;
@@ -50,104 +51,180 @@ class PigeonBuildHandler {
         continue;
       }
 
-      outInput = input;
+      matchingInput = input;
+      break;
+    }
+
+    if (matchingInput != null || config.inputsInferred) {
+      outInput = matchingInput;
       dartInput = nInputPath;
-      copyrightHeader = input.copyrightHeader ?? mainInput?.copyrightHeader;
-      oneLanguage = input.oneLanguage;
-      debugGenerators = input.debugGenerators;
+      copyrightHeader = matchingInput?.copyrightHeader ?? mainInput?.copyrightHeader;
+      oneLanguage = matchingInput?.oneLanguage;
+      debugGenerators = matchingInput?.debugGenerators;
 
-      astOut = combineOutFilePath(
-        out: input.ast?.out,
-        baseOut: mainInput?.ast?.out,
-      );
+      // this keeps the directory structure for inferred files the same as the pigeon files
+      var dirPathFromBase = p.dirname(p.relative(nInputPath, from: mainInput?.input));
+      PigeonBuildOutputConfig createInferredConfig(String filename) {
+        return PigeonBuildOutputConfig(path: p.join(dirPathFromBase, filename));
+      }
 
-      if (input.dart != null) {
-        dartOut = combineOutFilePath(
-          out: input.dart!.out,
-          baseOut: mainInput?.dart?.out,
+      var baseFileName = p.basenameWithoutExtension(dirPathFromBase);
+      // dart files should be in snake_case, but just in case, let's convert it anyway
+      var baseFileInSnakeCase = _pascalToSnake(baseFileName);
+      var baseFileInPascalCase = _snakeToPascal(baseFileInSnakeCase);
+
+      if (matchingInput?.ast != null) {
+        astOut = combineOutFilePath(
+          out: matchingInput?.ast!.out,
+          baseOut: mainInput?.ast?.out,
         );
-        dartTestOut = combineOutFilePath(
-          out: input.dart!.testOut,
-          baseOut: mainInput?.dart?.testOut,
+      } else if (_shouldInfer(mainInput?.ast, config)) {
+        var astPigeonName = "$baseFileInSnakeCase.pigeon.ast";
+        astOut = combineOutFilePath(
+          out: createInferredConfig(astPigeonName),
+          baseOut: mainInput?.ast?.out,
         );
       }
 
-      if (input.objc != null) {
-        if (mainInput?.objc?.prefix != null || input.objc!.prefix != null) {
+      if (matchingInput?.dart != null) {
+        dartOut = combineOutFilePath(
+          out: matchingInput?.dart!.out,
+          baseOut: mainInput?.dart?.out,
+        );
+        dartTestOut = combineOutFilePath(
+          out: matchingInput?.dart!.testOut,
+          baseOut: mainInput?.dart?.testOut,
+        );
+      } else if (_shouldInfer(mainInput?.dart, config)) {
+        var dartPigeonName = "$baseFileInSnakeCase.pigeon.dart";
+        dartOut = combineOutFilePath(
+          out: createInferredConfig(dartPigeonName),
+          baseOut: mainInput?.dart?.out,
+        );
+      }
+
+      if (matchingInput?.objc != null) {
+        objcHeaderOut = combineOutFilePath(
+          out: matchingInput?.objc!.headerOut,
+          baseOut: mainInput?.objc?.headerOut,
+        );
+        objcSourceOut = combineOutFilePath(
+          out: matchingInput?.objc!.sourceOut,
+          baseOut: mainInput?.objc?.sourceOut,
+        );
+      } else if (_shouldInfer(mainInput?.objc, config)) {
+        var objcHeaderPigeonName = "$baseFileInPascalCase.pigeon.h";
+        var objcSourcePigeonName = "$baseFileInPascalCase.pigeon.m";
+        objcHeaderOut = combineOutFilePath(
+          out: createInferredConfig(objcHeaderPigeonName),
+          baseOut: mainInput?.objc?.headerOut,
+        );
+        objcSourceOut = combineOutFilePath(
+          out: createInferredConfig(objcSourcePigeonName),
+          baseOut: mainInput?.objc?.sourceOut,
+        );
+      }
+      if (objcHeaderOut != null && objcSourceOut != null) {
+        if (mainInput?.objc?.prefix != null || matchingInput?.objc?.prefix != null) {
           objcOptions = ObjcOptions(
-            prefix: input.objc?.prefix ?? mainInput!.objc!.prefix,
+            prefix: matchingInput?.objc?.prefix ?? mainInput?.objc?.prefix,
           );
         } else {
           objcOptions =
               ObjcOptions(); //TODO: Remove when this PR is merged https://github.com/flutter/packages/pull/4756
         }
-        objcHeaderOut = combineOutFilePath(
-          out: input.objc!.headerOut,
-          baseOut: mainInput?.objc?.headerOut,
-        );
-        objcSourceOut = combineOutFilePath(
-          out: input.objc!.sourceOut,
-          baseOut: mainInput?.objc?.sourceOut,
-        );
       }
 
-      if (input.java != null) {
-        javaOptions = JavaOptions(
-          package: combinePackage(
-            input.java!.package,
-            mainInput?.java?.package,
-          ),
-          useGeneratedAnnotation: input.java!.useGeneratedAnnotation,
-        );
+      if (matchingInput?.java != null) {
         javaOut = combineOutFilePath(
-          out: input.java!.out,
+          out: matchingInput?.java!.out,
+          baseOut: mainInput?.java?.out,
+        );
+      } else if (_shouldInfer(mainInput?.java, config)) {
+        var javaPigeonName = "$baseFileInPascalCase.pigeon.java";
+        javaOut = combineOutFilePath(
+          out: createInferredConfig(javaPigeonName),
           baseOut: mainInput?.java?.out,
         );
       }
-
-      if (input.kotlin != null) {
-        kotlinOptions = KotlinOptions(
+      if (javaOut != null) {
+        javaOptions = JavaOptions(
           package: combinePackage(
-            input.kotlin!.package,
-            mainInput?.kotlin?.package,
+            matchingInput?.java?.package,
+            mainInput?.java?.package,
           ),
-        );
-        kotlinOut = combineOutFilePath(
-          out: input.kotlin!.out,
-          baseOut: mainInput?.kotlin?.out,
+          useGeneratedAnnotation: matchingInput?.java!.useGeneratedAnnotation,
         );
       }
 
-      if (input.swift != null) {
+      if (matchingInput?.kotlin != null) {
+        kotlinOut = combineOutFilePath(
+          out: matchingInput?.kotlin!.out,
+          baseOut: mainInput?.kotlin?.out,
+        );
+      } else if (_shouldInfer(mainInput?.kotlin, config)) {
+        var kotlinPigeonName = "$baseFileInPascalCase.pigeon.kt";
+        kotlinOut = combineOutFilePath(
+          out: createInferredConfig(kotlinPigeonName),
+          baseOut: mainInput?.kotlin?.out,
+        );
+      }
+      if (kotlinOut != null) {
+        kotlinOptions = KotlinOptions(
+          package: combinePackage(
+            matchingInput?.kotlin?.package,
+            mainInput?.kotlin?.package,
+          ),
+        );
+      }
+
+      if (matchingInput?.swift != null) {
         swiftOut = combineOutFilePath(
-          out: input.swift!.out,
+          out: matchingInput?.swift!.out,
+          baseOut: mainInput?.swift?.out,
+        );
+      } else if (_shouldInfer(mainInput?.swift, config)) {
+        var swiftPigeonName = "$baseFileInPascalCase.pigeon.swift";
+        swiftOut = combineOutFilePath(
+          out: createInferredConfig(swiftPigeonName),
           baseOut: mainInput?.swift?.out,
         );
       }
 
-      if (input.cpp != null) {
-        if (mainInput?.cpp?.namespace != null || input.cpp!.namespace != null) {
+      if (matchingInput?.cpp != null) {
+        cppHeaderOut = combineOutFilePath(
+          out: matchingInput?.cpp!.headerOut,
+          baseOut: mainInput?.cpp?.headerOut,
+        );
+        cppSourceOut = combineOutFilePath(
+          out: matchingInput?.cpp!.sourceOut,
+          baseOut: mainInput?.cpp?.sourceOut,
+        );
+      } else if (_shouldInfer(mainInput?.cpp, config)) {
+        var cppHeaderPigeonName = "$baseFileInSnakeCase.pigeon.h";
+        var cppSourcePigeonName = "$baseFileInSnakeCase.pigeon.cpp";
+        cppHeaderOut = combineOutFilePath(
+          out: createInferredConfig(cppHeaderPigeonName),
+          baseOut: mainInput?.cpp?.headerOut,
+        );
+        cppSourceOut = combineOutFilePath(
+          out: createInferredConfig(cppSourcePigeonName),
+          baseOut: mainInput?.cpp?.sourceOut,
+        );
+      }
+      if (cppHeaderOut != null && cppSourceOut != null) {
+        if (mainInput?.cpp?.namespace != null || matchingInput?.cpp?.namespace != null) {
           cppOptions = CppOptions(
-            namespace: input.cpp?.namespace ?? mainInput!.cpp!.namespace,
+            namespace: matchingInput?.cpp?.namespace ?? mainInput?.cpp?.namespace,
           );
         } else {
           cppOptions =
               CppOptions(); //TODO: Remove when this PR is merged https://github.com/flutter/packages/pull/4756
         }
-        cppHeaderOut = combineOutFilePath(
-          out: input.cpp!.headerOut,
-          baseOut: mainInput?.cpp?.headerOut,
-        );
-        cppSourceOut = combineOutFilePath(
-          out: input.cpp!.sourceOut,
-          baseOut: mainInput?.cpp?.sourceOut,
-        );
       }
-
-      break;
     }
 
-    if (outInput == null) {
+    if (outInput == null && !config.inputsInferred) {
       return createBuildHandlerResult(
         config: config,
       );
@@ -194,10 +271,30 @@ class PigeonBuildHandler {
   }
 
   List<String> getAllInputs(PigeonBuildConfig config) {
-    return config.inputs
-        .map((input) => combinePath(input.input, config.mainInput?.input))
+    var resolvedInputs = config.inputsInferred 
+        ? getInferredInputs(config) 
+        : config.inputs.map((input) => combinePath(input.input, config.mainInput?.input));
+    return resolvedInputs
         .where((inputPath) => inputPath != null)
         .cast<String>()
+        .toList();
+  }
+  
+  List<String> getInferredInputs(PigeonBuildConfig config) {
+    final mainInput = config.mainInput;
+    if (mainInput == null) return [];
+
+    var inputDirPath = mainInput.input;
+    if (inputDirPath == null) return [];
+
+    var inputDir = Directory(inputDirPath);
+    if (!inputDir.existsSync()) return [];
+
+    return inputDir
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where((file) => file.path.endsWith('.dart'))
+        .map((file) => p.join(inputDir.path, p.relative(file.path, from: inputDir.path)))
         .toList();
   }
 
@@ -241,5 +338,28 @@ class PigeonBuildHandler {
     }
 
     return package;
+  }
+
+  bool _shouldInfer(Object? configFromMainInput, PigeonBuildConfig config) {
+    return config.inputsInferred && configFromMainInput != null;
+  }
+
+  String _snakeToPascal(String str) {
+    return str
+        .split(RegExp(r"_+"))
+        .map((namePart) {
+          return namePart[0].toUpperCase() + namePart.substring(1);
+        })
+        .join();
+  }
+
+  String _pascalToSnake(String str) {
+    return str.replaceAllMapped(
+      RegExp(r"_*[A-Z]+"),
+      (match) {
+        var namePart = match[0]!.replaceAll("_", "");
+        return "_${namePart.toLowerCase()}";
+      },
+    );
   }
 }

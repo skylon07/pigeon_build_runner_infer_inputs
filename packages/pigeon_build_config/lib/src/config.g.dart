@@ -49,7 +49,7 @@ PigeonBuildConfig _$PigeonBuildConfigFromJson(Map json) => $checkedCreate(
       ($checkedConvert) {
         $checkKeys(
           json,
-          allowedKeys: const ['main-input', 'inputs'],
+          allowedKeys: const ['main-input', 'inputs', 'inputs-inferred'],
         );
         final val = PigeonBuildConfig(
           mainInput: $checkedConvert(
@@ -63,16 +63,22 @@ PigeonBuildConfig _$PigeonBuildConfigFromJson(Map json) => $checkedCreate(
                       ?.map((e) => PigeonBuildInputConfig.fromJson(e as Map))
                       .toList() ??
                   const <PigeonBuildInputConfig>[]),
+          inputsInferred:
+              $checkedConvert('inputs-inferred', (v) => v as bool? ?? false),
         );
         return val;
       },
-      fieldKeyMap: const {'mainInput': 'main-input'},
+      fieldKeyMap: const {
+        'mainInput': 'main-input',
+        'inputsInferred': 'inputs-inferred'
+      },
     );
 
 Map<String, dynamic> _$PigeonBuildConfigToJson(PigeonBuildConfig instance) =>
     <String, dynamic>{
       'main-input': instance.mainInput,
       'inputs': instance.inputs,
+      'inputs-inferred': instance.inputsInferred,
     };
 
 PigeonBuildInputConfig _$PigeonBuildInputConfigFromJson(Map json) =>
