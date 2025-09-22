@@ -362,12 +362,16 @@ class PigeonBuildHandler {
   }
 
   String _snakeToPascal(String str) {
-    return str
+    var namePartsJoined = str
         .split(RegExp(r"_+"))
         .map((namePart) {
+          if (namePart.isEmpty) return "";
           return namePart[0].toUpperCase() + namePart.substring(1);
         })
         .join();
+
+    var strOnlyUnderscores = namePartsJoined.isEmpty;
+    return strOnlyUnderscores ? str : namePartsJoined;
   }
 
   String _pascalToSnake(String str) {
