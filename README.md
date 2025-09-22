@@ -23,7 +23,7 @@ dev_dependencies:
   build_runner: ^<latest_build_runner_version>
   pigeon_build_runner: ^<latest_pigeon_build_runner_version>
 ```
-Make sure to replace <latest_pigeon_version>, <latest_build_runner_version>, and <latest_pigeon_build_runner_version> with the most recent versions available. You can find the latest versions on [pub.dev](https://pub.dev).
+Make sure to replace \<latest_pigeon_version>, \<latest_build_runner_version>, and \<latest_pigeon_build_runner_version> with the most recent versions available. You can find the latest versions on [pub.dev](https://pub.dev).
 
 #### 2. Include a pigeon folder
 If you have your pigeon files placed outside the lib folder in your Dart project, you will need to create a `build.yaml` file to configure the build system properly. This step is necessary to generate the necessary code from your pigeon files.
@@ -52,7 +52,7 @@ Open the pubspec.yaml file in your Flutter project.
 
 Add the following configuration under the `pigeon` key.
 
-It's not mandatory to include all the outputs mentioned below. Feel free to configure only the outputs that are necessary for your requirements.
+It's not mandatory to include outputs for all languages mentioned below. Feel free to configure only the outputs that are necessary for your requirements.
 
 **Note:** Replace paths with the essential paths for your project configuration.
 
@@ -110,7 +110,31 @@ pigeon:
         source-out: my_pigeon.g.cpp
 ```
 
-Using main-input is not absolutely mandatory, but it greatly aids in defining base paths for input/output folders and package names, effectively reducing boilerplate.
+Alternatively, you can have the tool automatically generate the input files for you by including `inputs-inferred: true`. This will generate files according to the base paths defined by the `main-input.input` key. If a language is not included in `main-input`, no outputs will be generated for that language.
+
+```yaml
+pigeon:
+  # automatically generate outputs based on discovered input files
+  inputs-inferred: true
+  main-input:
+    input: pigeons/
+    # only files for dart, swift, kotlin, and c++ will ge generated
+    dart:
+      out: lib/src/pigeons/ 
+      test-out: test/pigeons/
+    swift:
+      out: ios/Runner/
+    kotlin:
+      out: android/app/src/main/kotlin/dev/flutter/pigeon_example_app
+      package: your.package.name
+    cpp:
+      header-out: windows/runner
+      source-out: windows/runner
+      namespace: CppNamespace
+
+```
+
+Using main-input is not mandatory, but it greatly aids in defining base paths for input/output folders and package names, effectively reducing boilerplate.
 
 ##### Path configuration
 
@@ -184,6 +208,7 @@ pigeon:
       header-out: windows/runner
       source-out: windows/runner
       namespace: CppNamespace
+  inputs-inferred: false
   inputs:
     - input: my_pigeon.dart
       
