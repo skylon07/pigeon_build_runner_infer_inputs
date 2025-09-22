@@ -78,7 +78,7 @@ class PigeonBuildHandler {
           out: matchingInput?.ast!.out,
           baseOut: mainInput?.ast?.out,
         );
-      } else if (_shouldInfer(mainInput?.ast, config)) {
+      } else if (_shouldInfer(mainInput?.ast?.out, config)) {
         var astPigeonName = "$inputFileInSnakeCase.pigeon.ast";
         astOut = combineOutFilePath(
           out: createInferredConfig(astPigeonName),
@@ -95,12 +95,21 @@ class PigeonBuildHandler {
           out: matchingInput?.dart!.testOut,
           baseOut: mainInput?.dart?.testOut,
         );
-      } else if (_shouldInfer(mainInput?.dart, config)) {
-        var dartPigeonName = "$inputFileInSnakeCase.pigeon.dart";
-        dartOut = combineOutFilePath(
-          out: createInferredConfig(dartPigeonName),
-          baseOut: mainInput?.dart?.out,
-        );
+      } else {
+        if (_shouldInfer(mainInput?.dart?.out, config)) {
+          var dartPigeonName = "$inputFileInSnakeCase.pigeon.dart";
+          dartOut = combineOutFilePath(
+            out: createInferredConfig(dartPigeonName),
+            baseOut: mainInput?.dart?.out,
+          );
+        }
+        if (_shouldInfer(mainInput?.dart?.testOut, config)) {
+          var dartPigeonName = "$inputFileInSnakeCase.pigeon.dart";
+          dartTestOut = combineOutFilePath(
+            out: createInferredConfig(dartPigeonName),
+            baseOut: mainInput?.dart?.testOut,
+          );
+        }
       }
 
       if (matchingInput?.objc != null) {
@@ -112,19 +121,23 @@ class PigeonBuildHandler {
           out: matchingInput?.objc!.sourceOut,
           baseOut: mainInput?.objc?.sourceOut,
         );
-      } else if (_shouldInfer(mainInput?.objc, config)) {
-        var objcHeaderPigeonName = "$inputFileInPascalCase.pigeon.h";
-        var objcSourcePigeonName = "$inputFileInPascalCase.pigeon.m";
-        objcHeaderOut = combineOutFilePath(
-          out: createInferredConfig(objcHeaderPigeonName),
-          baseOut: mainInput?.objc?.headerOut,
-        );
-        objcSourceOut = combineOutFilePath(
-          out: createInferredConfig(objcSourcePigeonName),
-          baseOut: mainInput?.objc?.sourceOut,
-        );
+      } else {
+        if (_shouldInfer(mainInput?.objc?.headerOut, config)) {
+          var objcHeaderPigeonName = "$inputFileInPascalCase.pigeon.h";
+          objcHeaderOut = combineOutFilePath(
+            out: createInferredConfig(objcHeaderPigeonName),
+            baseOut: mainInput?.objc?.headerOut,
+          );
+        }
+        if (_shouldInfer(mainInput?.objc?.sourceOut, config)) {
+          var objcSourcePigeonName = "$inputFileInPascalCase.pigeon.m";
+          objcSourceOut = combineOutFilePath(
+            out: createInferredConfig(objcSourcePigeonName),
+            baseOut: mainInput?.objc?.sourceOut,
+          );
+        }
       }
-      if (objcHeaderOut != null && objcSourceOut != null) {
+      if (objcHeaderOut != null || objcSourceOut != null) {
         if (mainInput?.objc?.prefix != null || matchingInput?.objc?.prefix != null) {
           objcOptions = ObjcOptions(
             prefix: matchingInput?.objc?.prefix ?? mainInput?.objc?.prefix,
@@ -140,7 +153,7 @@ class PigeonBuildHandler {
           out: matchingInput?.java!.out,
           baseOut: mainInput?.java?.out,
         );
-      } else if (_shouldInfer(mainInput?.java, config)) {
+      } else if (_shouldInfer(mainInput?.java?.out, config)) {
         var javaPigeonName = "$inputFileInPascalCase.pigeon.java";
         javaOut = combineOutFilePath(
           out: createInferredConfig(javaPigeonName),
@@ -162,7 +175,7 @@ class PigeonBuildHandler {
           out: matchingInput?.kotlin!.out,
           baseOut: mainInput?.kotlin?.out,
         );
-      } else if (_shouldInfer(mainInput?.kotlin, config)) {
+      } else if (_shouldInfer(mainInput?.kotlin?.out, config)) {
         var kotlinPigeonName = "$inputFileInPascalCase.pigeon.kt";
         kotlinOut = combineOutFilePath(
           out: createInferredConfig(kotlinPigeonName),
@@ -183,7 +196,7 @@ class PigeonBuildHandler {
           out: matchingInput?.swift!.out,
           baseOut: mainInput?.swift?.out,
         );
-      } else if (_shouldInfer(mainInput?.swift, config)) {
+      } else if (_shouldInfer(mainInput?.swift?.out, config)) {
         var swiftPigeonName = "$inputFileInPascalCase.pigeon.swift";
         swiftOut = combineOutFilePath(
           out: createInferredConfig(swiftPigeonName),
@@ -200,19 +213,23 @@ class PigeonBuildHandler {
           out: matchingInput?.cpp!.sourceOut,
           baseOut: mainInput?.cpp?.sourceOut,
         );
-      } else if (_shouldInfer(mainInput?.cpp, config)) {
-        var cppHeaderPigeonName = "$inputFileInSnakeCase.pigeon.h";
-        var cppSourcePigeonName = "$inputFileInSnakeCase.pigeon.cpp";
-        cppHeaderOut = combineOutFilePath(
-          out: createInferredConfig(cppHeaderPigeonName),
-          baseOut: mainInput?.cpp?.headerOut,
-        );
-        cppSourceOut = combineOutFilePath(
-          out: createInferredConfig(cppSourcePigeonName),
-          baseOut: mainInput?.cpp?.sourceOut,
-        );
+      } else {
+        if (_shouldInfer(mainInput?.cpp?.headerOut, config)) {
+          var cppHeaderPigeonName = "$inputFileInSnakeCase.pigeon.h";
+          cppHeaderOut = combineOutFilePath(
+            out: createInferredConfig(cppHeaderPigeonName),
+            baseOut: mainInput?.cpp?.headerOut,
+          );
+        }
+        if (_shouldInfer(mainInput?.cpp?.sourceOut, config)) {
+          var cppSourcePigeonName = "$inputFileInSnakeCase.pigeon.cpp";
+          cppSourceOut = combineOutFilePath(
+            out: createInferredConfig(cppSourcePigeonName),
+            baseOut: mainInput?.cpp?.sourceOut,
+          );
+        }
       }
-      if (cppHeaderOut != null && cppSourceOut != null) {
+      if (cppHeaderOut != null || cppSourceOut != null) {
         if (mainInput?.cpp?.namespace != null || matchingInput?.cpp?.namespace != null) {
           cppOptions = CppOptions(
             namespace: matchingInput?.cpp?.namespace ?? mainInput?.cpp?.namespace,
@@ -340,8 +357,8 @@ class PigeonBuildHandler {
     return package;
   }
 
-  bool _shouldInfer(Object? configFromMainInput, PigeonBuildConfig config) {
-    return config.inputsInferred && configFromMainInput != null;
+  bool _shouldInfer(PigeonBuildOutputConfig? outConfigFromMainInput, PigeonBuildConfig config) {
+    return config.inputsInferred && outConfigFromMainInput != null;
   }
 
   String _snakeToPascal(String str) {
