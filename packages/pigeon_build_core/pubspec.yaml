@@ -18,7 +18,7 @@ dependencies:
   pigeon_build_config:
     git:
       url: https://github.com/skylon07/pigeon_build_runner_infer_inputs.git
-      ref: dependable
+      ref: dependable-updated
       path: packages/pigeon_build_config
 
 dev_dependencies:

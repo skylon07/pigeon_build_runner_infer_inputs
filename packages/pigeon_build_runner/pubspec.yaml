@@ -14,12 +14,12 @@ dependencies:
   pigeon_build_config:
     git:
       url: https://github.com/skylon07/pigeon_build_runner_infer_inputs.git
-      ref: dependable
+      ref: dependable-updated
       path: packages/pigeon_build_config
   pigeon_build_core:
     git:
       url: https://github.com/skylon07/pigeon_build_runner_infer_inputs.git
-      ref: dependable
+      ref: dependable-updated
       path: packages/pigeon_build_core
   build: ^2.4.0
   pigeon: ">=24.0.0"
