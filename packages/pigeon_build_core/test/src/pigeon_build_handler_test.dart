@@ -5,6 +5,32 @@ import 'package:test/test.dart';
 
 void main() {
   final handler = PigeonBuildHandler();
+  final dummyInferredFilesDir = 'test/dummy_inferred_files';
+
+  test('getAllInputs() can return inferred dart input files', () {
+    var config = PigeonBuildConfig(
+      inputsInferred: true,
+      mainInput: PigeonBuildInputConfig(
+        input: dummyInferredFilesDir,
+      )
+    );
+
+    var result = handler.getAllInputs(config);
+
+    // the directory includes non-dart files as well,
+    // but they should not be included in the result
+    expect(result, isNot(contains('$dummyInferredFilesDir/dummy_1.txt')));
+    expect(result, isNot(contains('$dummyInferredFilesDir/tree_1/dummy_2.txt')));
+    expect(result, isNot(contains('$dummyInferredFilesDir/tree_1/tree_2/dummy_3.txt')));
+    expect(
+      result,
+      unorderedEquals([
+        '$dummyInferredFilesDir/dummy_1.dart',
+        '$dummyInferredFilesDir/tree_1/dummy_2.dart',
+        '$dummyInferredFilesDir/tree_1/tree_2/dummy_3.dart',
+      ]),
+    );
+  });
 
   group('handleInput returns right pigion options for', () {
     final defaultSimpleMainConfig = PigeonBuildInputConfig(
@@ -388,6 +414,149 @@ void main() {
       expect(options.objcOptions?.prefix, defaultSimpleMainConfig.objc!.prefix);
       expect(options.cppOptions?.namespace,
           defaultSimpleMainConfig.cpp!.namespace);
+    });
+
+    test('main input with inferred inputs', () {
+      var config = PigeonBuildConfig(
+        mainInput: defaultSimpleMainConfig,
+        inputsInferred: true,
+      );
+
+      var result = handler.handleInput(config, 'pigeon/file_for_example.dart');
+      var options = result.options;
+      
+      expect(result.input, isNull);
+      expect(options, isNotNull);
+      expect(options!.input, 'pigeon/file_for_example.dart');
+      expect(options.dartOut, 'src/pigeon/file_for_example.pigeon.dart');
+      expect(options.dartTestOut, 'test/pigeon/file_for_example.pigeon.dart');
+      expect(options.astOut, 'ast/file_for_example.pigeon.ast');
+      expect(options.javaOut, 'java/FileForExample.pigeon.java');
+      expect(options.kotlinOut, 'kotlin/FileForExample.pigeon.kt');
+      expect(options.objcHeaderOut, 'objc/headers/FileForExample.pigeon.h');
+      expect(options.objcSourceOut, 'objc/sources/FileForExample.pigeon.m');
+      expect(options.swiftOut, 'swift/FileForExample.pigeon.swift');
+      expect(options.swiftOptions, isNull);
+      expect(options.cppHeaderOut, 'cpp/headers/file_for_example.pigeon.h');
+      expect(options.cppSourceOut, 'cpp/sources/file_for_example.pigeon.cpp');
+    });
+
+    test('main input with inferred inputs and input overrides', () {
+      var config = PigeonBuildConfig(
+        mainInput: defaultSimpleMainConfig,
+        inputsInferred: true,
+        inputs: [
+          PigeonBuildInputConfig(
+            input: 'file_for_example.dart',
+            java: PigeonBuildJavaInputConfig(
+              out: PigeonBuildOutputConfig(
+                path: 'FileForExampleOverridden.java',
+              ),
+            ),
+            cpp: PigeonBuildCppInputConfig(
+              headerOut: PigeonBuildOutputConfig(
+                path: 'file_for_example_overridden.h',
+              ),
+              sourceOut: PigeonBuildOutputConfig(
+                path: 'file_for_example_overridden.cpp',
+              ),
+            ),
+          )
+        ],
+      );
+
+      var result = handler.handleInput(config, 'pigeon/file_for_example.dart');
+      var options = result.options;
+      
+      expect(result.input, config.inputs.first);
+      expect(options, isNotNull);
+      expect(options!.input, 'pigeon/file_for_example.dart');
+      // overridden outputs
+      expect(options.javaOut, 'java/FileForExampleOverridden.java');
+      expect(options.cppHeaderOut, 'cpp/headers/file_for_example_overridden.h');
+      expect(options.cppSourceOut, 'cpp/sources/file_for_example_overridden.cpp');
+      // inferred outputs
+      expect(options.dartOut, 'src/pigeon/file_for_example.pigeon.dart');
+      expect(options.dartTestOut, 'test/pigeon/file_for_example.pigeon.dart');
+      expect(options.astOut, 'ast/file_for_example.pigeon.ast');
+      expect(options.kotlinOut, 'kotlin/FileForExample.pigeon.kt');
+      expect(options.objcHeaderOut, 'objc/headers/FileForExample.pigeon.h');
+      expect(options.objcSourceOut, 'objc/sources/FileForExample.pigeon.m');
+      expect(options.swiftOut, 'swift/FileForExample.pigeon.swift');
+      expect(options.swiftOptions, isNull);
+    });
+
+    test('main input without all languages included', () {
+      var config = PigeonBuildConfig(
+        inputsInferred: true,
+        mainInput: PigeonBuildInputConfig(
+          input: 'pigeon/',
+          dart: PigeonBuildDartInputConfig(
+            out: PigeonBuildOutputConfig(
+              path: 'src/pigeon',
+            ),
+          ),
+          kotlin: PigeonBuildKotlinInputConfig(
+            out: PigeonBuildOutputConfig(
+              path: 'kotlin/',
+            ),
+            package: 'test.kotlin',
+          ),
+          cpp: PigeonBuildCppInputConfig(
+            headerOut: PigeonBuildOutputConfig(
+              path: 'cpp/headers/',
+            ),
+            sourceOut: PigeonBuildOutputConfig(
+              path: 'cpp/sources/',
+            ),
+            namespace: 'testnamespace',
+          ),
+        ),
+      );
+
+      var result = handler.handleInput(config, 'pigeon/file_for_example.dart');
+      var options = result.options;
+      
+      expect(result.input, isNull);
+      expect(options, isNotNull);
+      expect(options!.input, 'pigeon/file_for_example.dart');
+      // included languages/options
+      expect(options.dartOut, 'src/pigeon/file_for_example.pigeon.dart');
+      expect(options.kotlinOut, 'kotlin/FileForExample.pigeon.kt');
+      expect(options.cppHeaderOut, 'cpp/headers/file_for_example.pigeon.h');
+      expect(options.cppSourceOut, 'cpp/sources/file_for_example.pigeon.cpp');
+      // not included
+      expect(options.dartTestOut, isNull);
+      expect(options.astOut, isNull);
+      expect(options.javaOut, isNull);
+      expect(options.objcHeaderOut, isNull);
+      expect(options.objcSourceOut, isNull);
+      expect(options.swiftOut, isNull);
+      expect(options.swiftOptions, isNull);
+    });
+
+    test('inferred inputs without main input', () {
+      var config = PigeonBuildConfig(
+        inputsInferred: true,
+      );
+
+      var result = handler.handleInput(config, 'pigeon/file_for_example.dart');
+      var options = result.options;
+      
+      expect(result.input, isNull);
+      expect(options, isNotNull);
+      expect(options!.input, 'pigeon/file_for_example.dart');
+      expect(options.dartOut, isNull);
+      expect(options.dartTestOut, isNull);
+      expect(options.astOut, isNull);
+      expect(options.javaOut, isNull);
+      expect(options.kotlinOut, isNull);
+      expect(options.objcHeaderOut, isNull);
+      expect(options.objcSourceOut, isNull);
+      expect(options.swiftOut, isNull);
+      expect(options.swiftOptions, isNull);
+      expect(options.cppHeaderOut, isNull);
+      expect(options.cppSourceOut, isNull);
     });
   });
 
