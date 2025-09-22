@@ -68,10 +68,10 @@ class PigeonBuildHandler {
         return PigeonBuildOutputConfig(path: p.join(dirPathFromBase, filename));
       }
 
-      var baseFileName = p.basenameWithoutExtension(dirPathFromBase);
+      var inputFileName = p.basenameWithoutExtension(nInputPath);
       // dart files should be in snake_case, but just in case, let's convert it anyway
-      var baseFileInSnakeCase = _pascalToSnake(baseFileName);
-      var baseFileInPascalCase = _snakeToPascal(baseFileInSnakeCase);
+      var inputFileInSnakeCase = _pascalToSnake(inputFileName);
+      var inputFileInPascalCase = _snakeToPascal(inputFileInSnakeCase);
 
       if (matchingInput?.ast != null) {
         astOut = combineOutFilePath(
@@ -79,7 +79,7 @@ class PigeonBuildHandler {
           baseOut: mainInput?.ast?.out,
         );
       } else if (_shouldInfer(mainInput?.ast, config)) {
-        var astPigeonName = "$baseFileInSnakeCase.pigeon.ast";
+        var astPigeonName = "$inputFileInSnakeCase.pigeon.ast";
         astOut = combineOutFilePath(
           out: createInferredConfig(astPigeonName),
           baseOut: mainInput?.ast?.out,
@@ -96,7 +96,7 @@ class PigeonBuildHandler {
           baseOut: mainInput?.dart?.testOut,
         );
       } else if (_shouldInfer(mainInput?.dart, config)) {
-        var dartPigeonName = "$baseFileInSnakeCase.pigeon.dart";
+        var dartPigeonName = "$inputFileInSnakeCase.pigeon.dart";
         dartOut = combineOutFilePath(
           out: createInferredConfig(dartPigeonName),
           baseOut: mainInput?.dart?.out,
@@ -113,8 +113,8 @@ class PigeonBuildHandler {
           baseOut: mainInput?.objc?.sourceOut,
         );
       } else if (_shouldInfer(mainInput?.objc, config)) {
-        var objcHeaderPigeonName = "$baseFileInPascalCase.pigeon.h";
-        var objcSourcePigeonName = "$baseFileInPascalCase.pigeon.m";
+        var objcHeaderPigeonName = "$inputFileInPascalCase.pigeon.h";
+        var objcSourcePigeonName = "$inputFileInPascalCase.pigeon.m";
         objcHeaderOut = combineOutFilePath(
           out: createInferredConfig(objcHeaderPigeonName),
           baseOut: mainInput?.objc?.headerOut,
@@ -141,7 +141,7 @@ class PigeonBuildHandler {
           baseOut: mainInput?.java?.out,
         );
       } else if (_shouldInfer(mainInput?.java, config)) {
-        var javaPigeonName = "$baseFileInPascalCase.pigeon.java";
+        var javaPigeonName = "$inputFileInPascalCase.pigeon.java";
         javaOut = combineOutFilePath(
           out: createInferredConfig(javaPigeonName),
           baseOut: mainInput?.java?.out,
@@ -163,7 +163,7 @@ class PigeonBuildHandler {
           baseOut: mainInput?.kotlin?.out,
         );
       } else if (_shouldInfer(mainInput?.kotlin, config)) {
-        var kotlinPigeonName = "$baseFileInPascalCase.pigeon.kt";
+        var kotlinPigeonName = "$inputFileInPascalCase.pigeon.kt";
         kotlinOut = combineOutFilePath(
           out: createInferredConfig(kotlinPigeonName),
           baseOut: mainInput?.kotlin?.out,
@@ -184,7 +184,7 @@ class PigeonBuildHandler {
           baseOut: mainInput?.swift?.out,
         );
       } else if (_shouldInfer(mainInput?.swift, config)) {
-        var swiftPigeonName = "$baseFileInPascalCase.pigeon.swift";
+        var swiftPigeonName = "$inputFileInPascalCase.pigeon.swift";
         swiftOut = combineOutFilePath(
           out: createInferredConfig(swiftPigeonName),
           baseOut: mainInput?.swift?.out,
@@ -201,8 +201,8 @@ class PigeonBuildHandler {
           baseOut: mainInput?.cpp?.sourceOut,
         );
       } else if (_shouldInfer(mainInput?.cpp, config)) {
-        var cppHeaderPigeonName = "$baseFileInSnakeCase.pigeon.h";
-        var cppSourcePigeonName = "$baseFileInSnakeCase.pigeon.cpp";
+        var cppHeaderPigeonName = "$inputFileInSnakeCase.pigeon.h";
+        var cppSourcePigeonName = "$inputFileInSnakeCase.pigeon.cpp";
         cppHeaderOut = combineOutFilePath(
           out: createInferredConfig(cppHeaderPigeonName),
           baseOut: mainInput?.cpp?.headerOut,
