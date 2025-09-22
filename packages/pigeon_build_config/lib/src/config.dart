@@ -78,9 +78,6 @@ class PigeonBuildInputConfig {
   @JsonKey(name: 'copyright-header')
   final String? copyrightHeader;
 
-  @JsonKey(name: 'one-language')
-  final bool? oneLanguage;
-
   @JsonKey(name: 'debug-generators')
   final bool? debugGenerators;
 
@@ -110,7 +107,6 @@ class PigeonBuildInputConfig {
 
   const PigeonBuildInputConfig({
     this.copyrightHeader,
-    this.oneLanguage,
     this.ast,
     this.debugGenerators,
     this.input,

@@ -34,7 +34,6 @@ void main() {
     ];
 
     for (var input in inputs) {
-      expect(input.oneLanguage, isTrue);
       expect(input.debugGenerators, isTrue);
       expect(input.copyrightHeader, isNotNull);
       expect(input.ast?.out, isNotNull);
