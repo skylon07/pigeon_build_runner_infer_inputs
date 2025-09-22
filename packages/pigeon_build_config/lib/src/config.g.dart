@@ -106,7 +106,6 @@ PigeonBuildInputConfig _$PigeonBuildInputConfigFromJson(Map json) =>
         final val = PigeonBuildInputConfig(
           copyrightHeader:
               $checkedConvert('copyright-header', (v) => v as String?),
-          oneLanguage: $checkedConvert('one-language', (v) => v as bool?),
           ast: $checkedConvert(
               'ast',
               (v) => v == null
@@ -156,7 +155,6 @@ PigeonBuildInputConfig _$PigeonBuildInputConfigFromJson(Map json) =>
       },
       fieldKeyMap: const {
         'copyrightHeader': 'copyright-header',
-        'oneLanguage': 'one-language',
         'debugGenerators': 'debug-generators'
       },
     );
@@ -165,7 +163,6 @@ Map<String, dynamic> _$PigeonBuildInputConfigToJson(
         PigeonBuildInputConfig instance) =>
     <String, dynamic>{
       'copyright-header': instance.copyrightHeader,
-      'one-language': instance.oneLanguage,
       'debug-generators': instance.debugGenerators,
       'input': instance.input,
       'dart': instance.dart,

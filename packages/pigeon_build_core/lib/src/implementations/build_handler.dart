@@ -35,7 +35,6 @@ class PigeonBuildHandler {
     String? cppSourceOut;
     CppOptions? cppOptions;
     String? copyrightHeader;
-    bool? oneLanguage;
     String? astOut;
     bool? debugGenerators;
 
@@ -59,7 +58,6 @@ class PigeonBuildHandler {
       outInput = matchingInput;
       dartInput = nInputPath;
       copyrightHeader = matchingInput?.copyrightHeader ?? mainInput?.copyrightHeader;
-      oneLanguage = matchingInput?.oneLanguage;
       debugGenerators = matchingInput?.debugGenerators;
 
       // this keeps the directory structure for inferred files the same as the pigeon files
@@ -268,7 +266,6 @@ class PigeonBuildHandler {
     final pigeonOptions = PigeonOptions(
       input: dartInput,
       copyrightHeader: copyrightHeader,
-      oneLanguage: oneLanguage,
       debugGenerators: debugGenerators,
       dartOut: dartOut,
       dartTestOut: dartTestOut,
