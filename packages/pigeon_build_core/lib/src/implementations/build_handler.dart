@@ -72,6 +72,8 @@ class PigeonBuildHandler {
       // dart files should be in snake_case, but just in case, let's convert it anyway
       var inputFileInSnakeCase = _pascalToSnake(inputFileName);
       var inputFileInPascalCase = _snakeToPascal(inputFileInSnakeCase);
+      var inputFileInLowerCase = inputFileInPascalCase.toLowerCase();
+      var inputFileInUpperCase = inputFileInPascalCase.toUpperCase();
 
       if (matchingInput?.ast != null) {
         astOut = combineOutFilePath(
@@ -139,8 +141,12 @@ class PigeonBuildHandler {
       }
       if (objcHeaderOut != null || objcSourceOut != null) {
         if (mainInput?.objc?.prefix != null || matchingInput?.objc?.prefix != null) {
+          var prefix = matchingInput?.objc?.prefix ?? mainInput?.objc?.prefix;
+          if (config.inputsInferred) {
+            prefix ??= "${inputFileInUpperCase}_";
+          }
           objcOptions = ObjcOptions(
-            prefix: matchingInput?.objc?.prefix ?? mainInput?.objc?.prefix,
+            prefix: prefix,
           );
         } else {
           objcOptions =
@@ -161,9 +167,13 @@ class PigeonBuildHandler {
         );
       }
       if (javaOut != null) {
+        var package = matchingInput?.java?.package;
+        if (config.inputsInferred) {
+          package ??= '.$inputFileInLowerCase';
+        }
         javaOptions = JavaOptions(
           package: combinePackage(
-            matchingInput?.java?.package,
+            package,
             mainInput?.java?.package,
           ),
           useGeneratedAnnotation: matchingInput?.java!.useGeneratedAnnotation,
@@ -183,9 +193,13 @@ class PigeonBuildHandler {
         );
       }
       if (kotlinOut != null) {
+        var package = matchingInput?.kotlin?.package;
+        if (config.inputsInferred) {
+          package ??= '.$inputFileInLowerCase';
+        }
         kotlinOptions = KotlinOptions(
           package: combinePackage(
-            matchingInput?.kotlin?.package,
+            package,
             mainInput?.kotlin?.package,
           ),
         );
@@ -231,8 +245,12 @@ class PigeonBuildHandler {
       }
       if (cppHeaderOut != null || cppSourceOut != null) {
         if (mainInput?.cpp?.namespace != null || matchingInput?.cpp?.namespace != null) {
+          var namespace = matchingInput?.cpp?.namespace ?? mainInput?.cpp?.namespace;
+          if (config.inputsInferred) {
+            namespace ??= "pigeon::$inputFileInLowerCase";
+          }
           cppOptions = CppOptions(
-            namespace: matchingInput?.cpp?.namespace ?? mainInput?.cpp?.namespace,
+            namespace: namespace,
           );
         } else {
           cppOptions =
